@@ -2,11 +2,11 @@ close all;
 clear all;
 clc;
 
-Fs = 8192;
+Fs = 44100;
 nBits = 8;
 NumChannels = 1;
 filename = 'recording.wav';
-record_time = 5;
+record_time = 8;
 
 recObj =  audiorecorder(Fs, nBits, NumChannels);
 
@@ -22,23 +22,23 @@ disp('Start of Playback.');
 sound(y,Fs);
 disp('End of Playback.');
 
-% time_axis = 0:(1/Fs):(((length(y)/Fs))-(1/Fs));
-% 
-% figure;
-% plot(time_axis,y);
-% 
-% y_bb = zeros(size(y));
-% for i = 1:length(y)
-%     y_bb(i) = y(i) * cos(2*pi*500*i);
-% end
+time_axis = 0:(1/Fs):(((length(y)/Fs))-(1/Fs));
 
-% y_s = zeros(1,(length(y)/Fs));
-% for i = 1:Fs:(length(y)/Fs)
-%     
-%     for j = 1:Fs
-%         
-%     end
-% end
+figure;
+plot(time_axis,y);
 
-% figure;
-% plot(time_axis,y_bb);
+y_bb = zeros(size(y));
+for i = 1:length(y)
+    y_bb(i) = y(i) * cos(2*pi*500*i);
+end
+
+y_s = zeros(1,(length(y)/Fs));
+for i = 1:Fs:(length(y)/Fs)
+    
+    for j = 1:Fs
+        
+    end
+end
+
+figure;
+plot(time_axis,y_bb);
