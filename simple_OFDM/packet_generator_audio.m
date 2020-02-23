@@ -1,12 +1,12 @@
-function x_upsampled = packet_generator(bits_per_sym,bits)
+function x_upsampled = packet_generator(bits_per_sym,bits,x_stf_len,us_rate)
 
-    us_rate = 2.25
+    
 
     % STF
     S = (1 / sqrt(2)) * [0, 0, (1 + 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, ...
     0, 0, 0, 0, (-1 - 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, (1 + 1j), 0, 0];
 
-    x_stf = zeros(1,4410);
+    x_stf = zeros(1,x_stf_len);
     for time_index = 1:length(x_stf)
         time_sample = 0;
         for freq_index = 1: length(S)

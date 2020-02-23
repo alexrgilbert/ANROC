@@ -19,9 +19,13 @@ M = bits_per_sym;
 num_carriers = 32;
 num_prefix = 8;
 num_ofdmsymbols = 12;
+x_stf_len = 4410;
+us_rate = 2.25;
 bits = randi([0,1],1,(num_ofdmsymbols*num_carriers*max(log2(M),1)));
 
-x_len = packet_generator_audio(bits_per_sym,bits);
+ total_tx_len = (length(bits) + (ceil((length(bits)) / (num_carriers))*num_prefix) + x_stf_len)*us_rate;
+
+x_len = packet_generator_audio(bits_per_sym,bits,x_stf_len,us_rate);
 msg_len = length(x_len);
 x_full = zeros(20*msg_len,1);
 for i = 1:20
