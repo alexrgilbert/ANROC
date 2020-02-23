@@ -1,6 +1,6 @@
 %Simple PAM Transmitter
 
-% 2 bit Prefix 
+% 2 bit Prefix
 % 8 Data Bits
 % 2 bit Suffix
 % .5 sec Ts
@@ -13,8 +13,15 @@
 % Ts = .1;
 Fc = 500;
 Fs = 44100;
+
 bits_per_sym = 2;
-x_len = packet_generator_audio(bits_per_sym);
+M = bits_per_sym;
+num_carriers = 32;
+num_prefix = 8;
+num_ofdmsymbols = 12;
+bits = randi([0,1],1,(num_ofdmsymbols*num_carriers*max(log2(M),1)));
+
+x_len = packet_generator_audio(bits_per_sym,bits);
 msg_len = length(x_len);
 x_full = zeros(20*msg_len,1);
 for i = 1:20
@@ -28,18 +35,18 @@ end
 %     Prefix(i,1) = temp;
 %     temp = temp*(-1);
 % end
-% 
+%
 % rng(1234)
 % Data = (2.*round(rand(DataBits,1)))-1;
-% 
-% 
+%
+%
 % Suffix = zeros(SFbits,1);
 % temp = -1;
 % for i = 1:SFbits
 %     Suffix(i,1) = temp;
 %     temp = temp*(-1);
 % end
-% 
+%
 % signalbits = [Prefix; Data; Suffix];
 % signal = repelem(signalbits,Fs*Ts);
 % prefixsig = repelem(Prefix,Fs*Ts);

@@ -1,4 +1,4 @@
-function x_upsampled = packet_generator(bits_per_sym)
+function x_upsampled = packet_generator(bits_per_sym,bits)
 
     us_rate = 2.25
 
@@ -34,8 +34,13 @@ function x_upsampled = packet_generator(bits_per_sym)
     num_ofdmsymbols = 12;
 
     % Data
-    bits = randi([0,1],1,(num_ofdmsymbols*num_carriers*max(log2(M),1)));
-    syms = (pskmod(bits',M));%,'gray','InputType','bit','UnitAveragePower',true))';
+    // bits = randi([0,1],1,(num_ofdmsymbols*num_carriers*max(log2(M),1)));
+    num_ofdmsymbols = ceil(length(bits) / (num_carriers)*max(log2(M),1));
+    bits2pad = num_ofdmsymbols*(num_carriers)*max(log2(M),1);
+    bits_padded = zeros(1,bits2pad);
+    bits_padded(1,1:length(bits)) = bits;
+       ceil(length(bits) / (num_carriers)*max(log2(M),1))
+    syms = (pskmod(bits_padded',M));%,'gray','InputType','bit','UnitAveragePower',true))';
 
 %     figure;
 %     refpts = pskmod((0:(M-1))',M);
