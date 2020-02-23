@@ -1,4 +1,4 @@
-function x = packet_generator(bits_per_sym)
+function x_upsampled = packet_generator(bits_per_sym)
 
     us_rate = 2.25
 
