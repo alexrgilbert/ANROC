@@ -1,9 +1,11 @@
 function x = packet_generator(bits_per_sym)
 
+    us_rate = 2.25
+
     % STF
     S = (1 / sqrt(2)) * [0, 0, (1 + 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, ...
     0, 0, 0, 0, (-1 - 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, (1 + 1j), 0, 0];
-    
+
     x_stf = zeros(1,4410);
     for time_index = 1:length(x_stf)
         time_sample = 0;
@@ -34,7 +36,7 @@ function x = packet_generator(bits_per_sym)
     % Data
     bits = randi([0,1],1,(num_ofdmsymbols*num_carriers*max(log2(M),1)));
     syms = (pskmod(bits',M));%,'gray','InputType','bit','UnitAveragePower',true))';
-    
+
 %     figure;
 %     refpts = pskmod((0:(M-1))',M);
 %     plot(syms,'co');
@@ -45,7 +47,7 @@ function x = packet_generator(bits_per_sym)
 %     ylabel('Quadrature');
 %     legend('syms','refpts', ...
 %         'Reference constellation','location','nw');
-    
+
     x_data = complex(zeros(1,(num_ofdmsymbols*(num_carriers + num_prefix))),...
                      zeros(1,(num_ofdmsymbols*(num_carriers + num_prefix))));
 
@@ -60,5 +62,14 @@ function x = packet_generator(bits_per_sym)
     end
 
     x = [x_stf x_ltf x_data];
+
+
+    us_len = us_rate*length(x);
+    x_upsampled = complex(zeros(1,us_len),...
+                        zeros(1,us_len));
+    for i = 1:(us_len)
+        downsampled_idx = floor((i-1)/2.25)+1;
+        x_upsampled(1,i) = x(1,downsampled_idx)
+    end
 
 end
