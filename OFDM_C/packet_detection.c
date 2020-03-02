@@ -55,17 +55,17 @@ correlate_stf () {
     int i, j;
     for (i = 0; i < (STF_LEN*10); i++) {
         for (j = 0; j < STF_LEN; j++) {
-            r_i[i] = r_i[i] + ((y_conj_i[i+j] * STF_i[j]) - (y_conj_q[i+j] * STF_q[j]))
-            r_q[i] = r_q[i] + ((y_conj_i[i+j] * STF_q[j]) + (y_conj_q[i+j] * STF_i[j]))
+            r_i[i] = r_i[i] + ((y_i[i+j] * STF_i[j]) + (y_q[i+j] * STF_q[j]))
+            r_q[i] = r_q[i] + ((y_i[i+j] * STF_q[j]) - (y_q[i+j] * STF_i[j]))
         }
+        r_mag[i] = sqrtf(powf(r_i[i],2.0) + powf(r_q[i],2.0));
     }
 }
 
 packet_detect(){
-    conjugate_y();
     correlate_stf();
-    calculateMagnitude_r();
-    calculateThresh();
+    // calculateMagnitude_r();
+    // calculateThresh();
     int i, j;
     for(i = 0; i < (STF_LEN*2); i++){
         peak_cnt = 0;
