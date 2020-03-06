@@ -4,7 +4,7 @@ addpath('../fxns');
 p = ofdm_par_fxn();
 
 filename = 'recording.wav';
-rx_record_time = 1;
+rx_record_time = 10;
 rx_nBits = 16;
 rx_NumChannels = 1;
 
@@ -23,3 +23,5 @@ disp('End of Playback.');
 
 y = y';
 save(strcat('../save/rx_variables',p.save_suffix,'.mat'),'y');
+cd ..
+cd exp
