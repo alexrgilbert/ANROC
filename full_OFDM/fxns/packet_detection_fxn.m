@@ -1,4 +1,4 @@
-function [detected_syms,r_mag] = packet_detection_fxn(z_stf, y, buffer_len, detection_peaks)
+function [detected_syms,r_mag] = packet_detection_fxn(z_stf, y, buffer_len, detection_peaks, thresh_factor)
 
     addpath('../helpers');
 
@@ -14,7 +14,7 @@ function [detected_syms,r_mag] = packet_detection_fxn(z_stf, y, buffer_len, dete
     r_mag = abs(r);
     mean_r = mean(r_mag);
     std_r = std(r_mag);
-    thresh_r = mean_r + (2.5*std_r);
+    thresh_r = mean_r + (thresh_factor*std_r);
     possible_peaks = (r_mag > thresh_r);
 
     detected_syms = zeros(1,len);

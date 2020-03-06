@@ -2,7 +2,7 @@ function p = ofdm_par_fxn()
 
     addpath('../helpers');
 
-    p.save_suffix = '_3_5_2020_11_50';
+    p.save_suffix = datestr(now,'_dd_mm_yyyy_HH_MM_SS');
     p.speakerRange = [20 20e3];
     p.Fc = (diff(p.speakerRange)/2) + p.speakerRange(1);
     p.TX_Fs = 48000;
@@ -24,17 +24,21 @@ function p = ofdm_par_fxn()
     p.delta_fs = p.BW / 64;
     p.symbol_time = 1 / p.BW;
     p.random_range = [((p.x_stf_len + p.x_ltf_len) * 2) ((p.x_stf_len + p.x_ltf_len) * 10)];
-    p.random_start_flag = true;
     p.detection_peaks = 9;
-    p.upconvert = true;
-    p.upsample = true;
+    p.thresh_factor = 2;
+    p.random_start_flag = true;
+    p.upconvert = false;%%%
+    p.filter_complex = true;
+    p.upsample = false;%%%
+    p.channel = true;%%%
+    p.num_taps = 1;
     if p.upsample == false
         p.us_rate = 1;
         p.ds_rate = 1;
     end
 
-    p.plot_spectrum = false;
-    p.plot_signal = false;
+    p.plot_spectrum = true;
+    p.plot_signal = true;
     p.plot_comparison = true;
     p.print_detection = true;
     p.plot_channel_estimation = true;

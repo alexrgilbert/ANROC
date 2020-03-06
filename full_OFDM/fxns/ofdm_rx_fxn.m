@@ -18,14 +18,14 @@ function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L]= ofdm_r
     % num_packets = ceil ( num_symbols /  num_symbols_per_packet );
 
     if p.upconvert == true
-        [y_bb_us,y_bb_hp] = downconvert(y, p.Fc, p.RX_Fs, p.BW);
+        [y_bb_us,y_bb_hp] = downconvert(y, p.Fc, p.RX_Fs, p.BW,p.filter_complex);
     else
         y_bb_us = y; y_bb_hp = y;
     end
 
     y_bb = downsample(y_bb_us, p.ds_rate);
 
-    [detected_syms,r] = packet_detection_fxn(x_stf(1:(p.x_stf_len/10)), y_bb, (p.x_stf_len + p.x_ltf_len - 5),p.detection_peaks);
+    [detected_syms,r] = packet_detection_fxn(x_stf(1:(p.x_stf_len/10)), y_bb, (p.x_stf_len + p.x_ltf_len - 5),p.detection_peaks,p.thresh_factor);
     detected_syms_idcs = find(detected_syms);
     num_detected = length(detected_syms_idcs);
 
