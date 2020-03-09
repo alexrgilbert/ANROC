@@ -1,11 +1,11 @@
 
 
-function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L]= ofdm_rx_fxn(y, p, d)
+function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L,H_hat_pilot]= ofdm_rx_fxn(y, p, d)
 
     addpath('../helpers');
 
     [x_stf,x_ltf] = gt_training_fields(p.x_stf_len,p.x_ltf_len,p.delta_fs,p.symbol_time);
-
+    data_length = (p.num_symbols_per_packet * (p.num_carriers + p.num_prefix));
     % num_data_carriers = (num_carriers-num_dead_carriers-num_pilots);
     % packet_length = (x_stf_len + x_ltf_len + (num_symbols_per_packet * (num_carriers + num_prefix))) * us_rate;
     % train_packet_length = (x_stf_len + x_ltf_len) * us_rate;
@@ -32,12 +32,26 @@ function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L]= ofdm_r
     H_hat_avg = zeros(1,p.ltf_subchannels);
     L_hat_avg = zeros(1,p.ltf_subchannels);
     L = zeros(1,p.ltf_subchannels);
+    pilots = [];
+    syms = [];
     for i = 1:num_detected
         ltf_start_idx = detected_syms_idcs(i) + p.x_stf_len;
         ltf_end_idx = ltf_start_idx + p.x_ltf_len - 1;
-        y_ltf = y_bb(ltf_start_idx:ltf_end_idx);
+        shift = 0;
+        y_ltf = y_bb(ltf_start_idx+shift:ltf_end_idx+shift);
 
-        [H_hat,L_hat,L] = channel_estimator_fxn(p.delta_fs,p.symbol_time,x_ltf,y_ltf);
+        data_start_idx = detected_syms_idcs(i) + p.x_stf_len + p.x_ltf_len;
+        data_end_idx = data_start_idx + data_length - 1;
+        shift = 0;
+        data = y_bb(data_start_idx+shift:data_end_idx+shift);
+
+        [H_hat,L_hat,L] = channel_estimator_fxn(p.delta_fs,p.symbol_time,x_ltf,y_ltf,p.num_carriers,p.num_dead_carriers);
+
+        % [pilots_packet,syms_packet] =extract_data_fxn(data,p.num_symbols_per_packet,p.num_carriers,...
+        %                             p.num_prefix,p.num_dead_carriers,p.num_pilots,p.M,p.pilot_idcs,p.dead_idcs)
+        %
+        % pilots = [pilots; pilots_packet];
+        % syms = [syms syms_packet];
 
         % if i < 25
         %     figure;
@@ -70,6 +84,14 @@ function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L]= ofdm_r
         H_hat_avg = H_hat_avg + (H_hat / num_detected);
         L_hat_avg = L_hat_avg + (L_hat / num_detected);
     end
+
+    % H_hat_pilot = channel_estimator_pilots_fxn(pilots,p.num_carriers,p,pilot);
+
+    for i = (p.num_train_packets+1):num_detected
+
+    end
+
+
 
 
 

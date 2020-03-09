@@ -20,7 +20,6 @@ if p.broadband == true
     for i = 1:length(h)
         h_l((delay_len*(i-1))+1) = h(i);
     end
-    h = h_l;
 end
 h = h/vecnorm(h);
 H = fft(h, 64);
