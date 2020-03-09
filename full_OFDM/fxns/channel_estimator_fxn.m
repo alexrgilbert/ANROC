@@ -1,4 +1,4 @@
-function [H_hat,L_hat,L] = channel_estimator_fxn(delta_fs,symbol_time, x_ltf,y_ltf)
+function [H_hat,L_hat,L] = channel_estimator_fxn(delta_fs,symbol_time, x_ltf,y_ltf,num_carriers,num_dead_carriers)
 
     addpath('../helpers');
 
@@ -21,6 +21,10 @@ function [H_hat,L_hat,L] = channel_estimator_fxn(delta_fs,symbol_time, x_ltf,y_l
         H_hat(k) = L_hat_k / (L_k) ;
         L_hat(k) = L_hat_k;
         L(k) = L_k;
-        H_hat((abs(H_hat) > 4)) = complex(1,0);
     end
+    nulls = (abs(H_hat) > 4);
+    % H_hat_valid = circshift(H_hat(~nulls),-((num_carriers - num_dead_carriers)/2));
+    % H_hat_valid = fliplr(H_hat(~nulls));
+    % H_hat(~nulls) = H_hat_valid;
+    H_hat(nulls) = complex(1,0);
 end

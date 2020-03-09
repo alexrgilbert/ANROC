@@ -19,28 +19,93 @@ function ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
 
     if p.plot_spectrum == true
         x_bb = downsample(signal_bb(1,1:end), p.ds_rate);
-        figure;subplot(3,2,1);periodogram(x_bb,[],length(x_bb),p.BW,'centered');title('Pre-TX: Baseband Downsampled (Post-Proc) Signal Spectrum');
-        subplot(3,2,2);periodogram(signal_bb_ds,[],length(signal_bb_ds),p.BW,'centered');title('Pre-TX: Baseband Downsampled Signal Spectrum');
-        subplot(3,2,3:4);periodogram(signal_bb,[],length(signal_bb),p.TX_Fs,'centered'); title('Pre-TX: Baseband Upsampled Signal Spectrum');
-        subplot(3,2,5:6);periodogram(signal,[],length(signal),p.TX_Fs,'centered'); title('Pre-TX: Upconverted Signal Spectrum');
-
-        figure;subplot(3,2,1:2);periodogram(y,[],length(y),p.TX_Fs,'centered');title('Post-RX: Upconverted Unfiltered Upsampled Signal Spectrum');
-        subplot(3,2,3);periodogram(y_bb_hp,[],length(y_bb_hp),p.TX_Fs,'centered');title('Post-RX: Baseband Unfiltered Upsampled Signal Spectrum');
-        subplot(3,2,4);periodogram(y_bb_us,[],length(y_bb_us),p.TX_Fs,'centered');title('Post-RX: Baseband Filtered Upsampled Signal Spectrum');
-        subplot(3,2,5:6); periodogram(y_bb,[],length(y_bb),p.BW,'centered');title('Post-RX: Baseband Filtered Downsampled Signal Spectrum');
+        % figure;subplot(3,2,1);periodogram(x_bb,[],length(x_bb),p.BW,'centered');title('Pre-TX: Baseband Downsampled (Post-Proc) Signal Spectrum');
+        figure;
+        if p.plot_separate == false
+            subplot(3,2,1:2);
+        end;
+        periodogram(signal_bb_ds,[],length(signal_bb_ds),p.BW,'centered');title('Pre-TX: Baseband Downsampled Signal Spectrum');
+        if p.plot_separate == true
+            figure;
+        else
+            subplot(3,2,3:4);
+        end
+        periodogram(signal_bb,[],length(signal_bb),p.TX_Fs,'centered'); title('Pre-TX: Baseband Upsampled Signal Spectrum');
+        if p.plot_separate == true
+            figure;
+        else
+            subplot(3,2,5:6);
+        end
+        periodogram(signal,[],length(signal),p.TX_Fs,'centered'); title('Pre-TX: Upconverted Signal Spectrum');
+        figure;
+        if p.plot_separate == false
+            subplot(3,2,1:2);
+        end
+        periodogram(y,[],length(y),p.TX_Fs,'centered');title('Post-RX: Upconverted Unfiltered Upsampled Signal Spectrum');
+        if p.plot_separate == true
+            figure;
+        else
+            subplot(3,2,3);
+        end
+        periodogram(y_bb_hp,[],length(y_bb_hp),p.TX_Fs,'centered');title('Post-RX: Baseband Unfiltered Upsampled Signal Spectrum');
+        if p.plot_separate == true
+            figure;
+        else
+            subplot(3,2,4);
+        end
+        periodogram(y_bb_us,[],length(y_bb_us),p.TX_Fs,'centered');title('Post-RX: Baseband Filtered Upsampled Signal Spectrum');
+        if p.plot_separate == true
+            figure;
+        else
+            subplot(3,2,5:6);
+        end
+         periodogram(y_bb,[],length(y_bb),p.BW,'centered');title('Post-RX: Baseband Filtered Downsampled Signal Spectrum');
     end
 
     if p.plot_signal == true
         x_bb = downsample(signal_bb(1,1:end), p.ds_rate);
-        figure;subplot(3,2,1);plot(make_time_axis(x_bb,p.BW),abs(x_bb));title('Pre-TX: Baseband Downsampled (Post-Proc) Signal Magnitude');
-        subplot(3,2,2);plot(make_time_axis(signal_bb_ds,p.BW),abs(signal_bb_ds));title('Pre-TX: Baseband Downsampled Signal Magnitude');
-        subplot(3,2,3:4);plot(make_time_axis(signal_bb,p.TX_Fs),abs(signal_bb)); title('Pre-TX: Baseband Upsampled Signal Magnitude');
-        subplot(3,2,5:6);plot(make_time_axis(signal,p.TX_Fs),signal); title('Pre-TX: Upconverted Signal');
+%         figure;subplot(3,2,1);plot(make_time_axis(x_bb,p.BW),abs(x_bb));title('Pre-TX: Baseband Downsampled (Post-Proc) Signal Magnitude');
+        figure;
+        if p.plot_separate == false
+            subplot(3,2,1:2);
+        end
+        plot(make_time_axis(signal_bb_ds,p.BW),abs(signal_bb_ds));title('Pre-TX: Baseband Downsampled Signal Magnitude');
+        if p.plot_separate == true
+            figure;
+        else
+            subplot(3,2,3:4);
+        end
+        plot(make_time_axis(signal_bb,p.TX_Fs),abs(signal_bb)); title('Pre-TX: Baseband Upsampled Signal Magnitude');
+        if p.plot_separate == true
+            figure;
+        else
+            subplot(3,2,5:6);
+        end
+        plot(make_time_axis(signal,p.TX_Fs),signal); title('Pre-TX: Upconverted Signal');
 
-        figure;subplot(3,2,1:2);plot(make_time_axis(y,p.RX_Fs),abs(y));title('Post-RX: Upconverted Unfiltered Upsampled Signal Magnitude');
-        subplot(3,2,3);plot(make_time_axis(y_bb_hp,p.RX_Fs),abs(y_bb_hp));title('Post-RX: Baseband Unfiltered Upsampled Signal Magnitude');
-        subplot(3,2,4);plot(make_time_axis(y_bb_us,p.RX_Fs),abs(y_bb_us));title('Post-RX: Baseband Filtered Upsampled Signal Magnitude');
-        subplot(3,2,5:6); plot(make_time_axis(y_bb,p.BW),abs(y_bb));title('Post-RX: Baseband Filtered Downsampled Signal Magnitude');
+        figure;
+        if p.plot_separate == false
+            subplot(3,2,1:2);
+        end
+        plot(make_time_axis(y,p.RX_Fs),abs(y));title('Post-RX: Upconverted Unfiltered Upsampled Signal Magnitude');
+        if p.plot_separate == true
+            figure;
+        else
+            subplot(3,2,3);
+        end
+        plot(make_time_axis(y_bb_hp,p.RX_Fs),abs(y_bb_hp));title('Post-RX: Baseband Unfiltered Upsampled Signal Magnitude');
+        if p.plot_separate == true
+            figure;
+        else
+            subplot(3,2,4);
+        end
+        plot(make_time_axis(y_bb_us,p.RX_Fs),abs(y_bb_us));title('Post-RX: Baseband Filtered Upsampled Signal Magnitude');
+        if p.plot_separate == true
+            figure;
+        else
+            subplot(3,2,5:6);
+        end
+        plot(make_time_axis(y_bb,p.BW),abs(y_bb));title('Post-RX: Baseband Filtered Downsampled Signal Magnitude');
     end
 
     if p.plot_comparison == true
@@ -107,52 +172,60 @@ function ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
         subplot(2,2,1);
         legend_strs = {};
         xlabel('Frequency (delta_fs)');
-        stem(1:1:length(H_hat_avg),abs(H_hat_avg),'c'); legend_strs{end+1} = 'H Estimated Mag';
+        stem(1:1:length(H_hat_avg),abs(H_hat_avg),'c','*'); legend_strs{end+1} = 'H Estimated Mag';
         hold on;
         if d.sim == true
             stem(1:1:length(d.H),abs(d.H),'r'); legend_strs{end+1} = 'H GT Mag';
         end
-        stem(1:1:length(L_hat_avg),abs(L_hat_avg),'b'); legend_strs{end+1} = 'L Estimated Mag';
-        stem(1:1:length(L),abs(L),'m'); legend_strs{end+1} = 'L GT Mag';
+        if p.plot_L == true
+            stem(1:1:length(L_hat_avg),abs(L_hat_avg),'b','*'); legend_strs{end+1} = 'L Estimated Mag';
+            stem(1:1:length(L),abs(L),'m'); legend_strs{end+1} = 'L GT Mag';
+        end
         legend(legend_strs);
          title('Average Channel Estimate vs Actual Magnitude');
 
          subplot(2,2,2);
          legend_strs = {};
          xlabel('Frequency (delta_fs)');
-         stem(1:1:length(H_hat_avg),angle(H_hat_avg),'g'); legend_strs{end+1} = 'H Estimated Phase';
+         stem(1:1:length(H_hat_avg),angle(H_hat_avg),'g','*'); legend_strs{end+1} = 'H Estimated Phase';
          hold on;
          if d.sim == true
              stem(1:1:length(d.H),angle(d.H),'y'); legend_strs{end+1} = 'H GT Phase';
          end
-         stem(1:1:length(L_hat_avg),angle(L_hat_avg),'k'); legend_strs{end+1} = 'L Estimated Phase';
-         stem(1:1:length(L),angle(L),'r'); legend_strs{end+1} = 'L GT Phase';
+         if p.plot_L == true
+             stem(1:1:length(L_hat_avg),angle(L_hat_avg),'k','*'); legend_strs{end+1} = 'L Estimated Phase';
+             stem(1:1:length(L),angle(L),'r'); legend_strs{end+1} = 'L GT Phase';
+         end
          legend(legend_strs);
           title('Average Channel Estimate vs Actual Phase');
 
           subplot(2,2,3);
           legend_strs = {};
           xlabel('Frequency (delta_fs)');
-          stem(1:1:length(H_hat_avg),real(H_hat_avg),'c'); legend_strs{end+1} = 'H Estimated Real';
+          stem(1:1:length(H_hat_avg),real(H_hat_avg),'c','*'); legend_strs{end+1} = 'H Estimated Real';
           hold on;
           if d.sim == true
               stem(1:1:length(d.H),real(d.H),'r'); legend_strs{end+1} = 'H GT Real';
           end
-          stem(1:1:length(L_hat_avg),real(L_hat_avg),'b'); legend_strs{end+1} = 'L Estimated Real';
-          stem(1:1:length(L),real(L),'m'); legend_strs{end+1} = 'L GT Real';
+          if p.plot_L == true
+              stem(1:1:length(L_hat_avg),real(L_hat_avg),'b','*'); legend_strs{end+1} = 'L Estimated Real';
+              stem(1:1:length(L),real(L),'m'); legend_strs{end+1} = 'L GT Real';
+          end
           legend(legend_strs);
            title('Average Channel Estimate vs Actual Real');
 
            subplot(2,2,4);
            legend_strs = {};
            xlabel('Frequency (delta_fs)');
-           stem(1:1:length(H_hat_avg),imag(H_hat_avg),'g'); legend_strs{end+1} = 'H Estimated Imaginary';
+           stem(1:1:length(H_hat_avg),imag(H_hat_avg),'g','*'); legend_strs{end+1} = 'H Estimated Imaginary';
            hold on;
            if d.sim == true
                stem(1:1:length(d.H),imag(d.H),'y'); legend_strs{end+1} = 'H GT Imaginary';
            end
-           stem(1:1:length(L_hat_avg),imag(L_hat_avg),'k'); legend_strs{end+1} = 'L Estimated Imaginary';
-           stem(1:1:length(L),imag(L),'r'); legend_strs{end+1} = 'L GT Imaginary';
+           if p.plot_L == true
+               stem(1:1:length(L_hat_avg),imag(L_hat_avg),'k','*'); legend_strs{end+1} = 'L Estimated Imaginary';
+               stem(1:1:length(L),imag(L),'r'); legend_strs{end+1} = 'L GT Imaginary';
+           end
            legend(legend_strs);
             title('Average Channel Estimate vs Actual Imaginary');
     end

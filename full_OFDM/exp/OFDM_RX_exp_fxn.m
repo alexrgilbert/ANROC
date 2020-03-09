@@ -8,6 +8,7 @@ rx_record_time = 10;
 rx_nBits = 16;
 rx_NumChannels = 1;
 
+
 recObj =  audiorecorder(p.RX_Fs, rx_nBits, rx_NumChannels);
 
 disp('Start Recording.')
