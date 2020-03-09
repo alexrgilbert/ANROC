@@ -24,7 +24,7 @@ function p = ofdm_par_fxn()
 
     p.M = 2;
     p.num_carriers = 64;
-    p.num_packets = 20;
+    p.num_packets = 16;
     p.num_train_packets = 4;
     p.num_dead_carriers = 12;
     p.dead_idcs = [1 28:38];

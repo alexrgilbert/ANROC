@@ -12,7 +12,6 @@ function [pilots_packet,syms_packet] =extract_data_fxn(data,num_symbols_per_pack
 
     pilots_packet = [];
     syms_packet = [];
-    padded_syms_packet = [];
     for sym_num = 1:num_symbols_per_packet
         start_idx = ((sym_num-1)*(num_data_carriers+num_prefix))+num_prefix+1;
         end_idx = (sym_num*(num_data_carriers+num_prefix));
@@ -20,36 +19,11 @@ function [pilots_packet,syms_packet] =extract_data_fxn(data,num_symbols_per_pack
         ofdm_sym = fft(data(start_idx:end_idx),64);
 
         sym_data = ofdm_sym(data_mask);
-        pilot_data = ofdm_sym(pilot_mask);
+        sym_pilot = ofdm_sym(pilot_mask);
 
-        
-        pilot_packet
+
+        pilots_packet = [pilots_packet; sym_pilot];
+        syms_packet = [syms_packet sym_data];
     end
-
-    padded_syms = zeros(1,(num_ofdmsymbols*num_carriers));
-    syms_array = zeros(num_ofdmsymbols,num_carriers);
-
-    padded_syms_packet = [];
-    for sym_num = 1:num_symbols_per_packet
-            start_index = ((sym_num-1)*(num_carriers+num_prefix))+num_prefix+1;
-            end_index = ((sym_num)*(num_carriers+num_prefix));
-            padded_syms_packet = [padded_syms_packet fft(data(start_index:end_index),64)];
-    end
-
-    for sym_num = 1:num_symbols_per_packet
-            start_index = ((sym_num-1)*(num_carriers))+2;
-        end_index = start_index + 27;%((sym_num)*(num_carriers+num_prefix));
-            padded_syms_packet = [padded_syms_packet fft(data(start_index:end_index),64)];
-    end
-
-    syms = complex(zeros(1,(num_ofdmsymbols*(num_carriers-12))),...
-                          zeros(1,(num_ofdmsymbols*(num_carriers-12))));
-    for ofdmsymbol_index = 1:num_ofdmsymbols
-        symbol_start = (ofdmsymbol_index-1)*(num_carriers-12) + 1;
-        padded_symbol_start = (ofdmsymbol_index-1)*num_carriers + 1;
-        syms(symbol_start:(symbol_start+26-1)) = ...
-            padded_syms((padded_symbol_start+2-1):(padded_symbol_start+27-1));
-        syms(symbol_start+27-1:(symbol_start+num_carriers-12-1)) = ...
-            padded_syms((padded_symbol_start+39-1):(padded_symbol_start+num_carriers-1));
-    end
+    
 end

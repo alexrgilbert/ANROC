@@ -26,5 +26,5 @@ function [H_hat,L_hat,L] = channel_estimator_fxn(delta_fs,symbol_time, x_ltf,y_l
     % H_hat_valid = circshift(H_hat(~nulls),-((num_carriers - num_dead_carriers)/2));
     % H_hat_valid = fliplr(H_hat(~nulls));
     % H_hat(~nulls) = H_hat_valid;
-    H_hat(nulls) = complex(1,0);
+    H_hat(nulls) = complex(0,0);
 end

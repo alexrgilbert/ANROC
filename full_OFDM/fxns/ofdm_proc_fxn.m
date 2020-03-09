@@ -159,8 +159,13 @@ function ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
         start_idcs_gt_ds = find(detected_syms_gt_ds);
         start_idcs_gt_ds = start_idcs_gt_ds - start_idcs_gt_ds(1);
         if (length(start_idcs_ds) == length(start_idcs_gt_ds))
-                start_idcs_ds-start_idcs_gt_ds
+            start_idcs_ds-start_idcs_gt_ds
+            start_idcs_ds
+            start_idcs_gt_ds
+                
         else
+            min_length = min(length(start_idcs_ds),length(start_idcs_gt_ds));
+            start_idcs_ds(1:min_length)-start_idcs_gt_ds(1:min_length)
             start_idcs_ds
             start_idcs_gt_ds
         end

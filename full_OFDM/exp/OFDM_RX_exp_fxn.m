@@ -4,7 +4,7 @@ addpath('../fxns');
 p = ofdm_par_fxn();
 
 filename = 'recording.wav';
-rx_record_time = 10;
+rx_record_time = 20;
 rx_nBits = 16;
 rx_NumChannels = 1;
 

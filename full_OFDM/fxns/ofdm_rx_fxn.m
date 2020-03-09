@@ -40,13 +40,15 @@ function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L,H_hat_pi
         shift = 0;
         y_ltf = y_bb(ltf_start_idx+shift:ltf_end_idx+shift);
 
-        data_start_idx = detected_syms_idcs(i) + p.x_stf_len + p.x_ltf_len;
-        data_end_idx = data_start_idx + data_length - 1;
-        shift = 0;
-        data = y_bb(data_start_idx+shift:data_end_idx+shift);
-
         [H_hat,L_hat,L] = channel_estimator_fxn(p.delta_fs,p.symbol_time,x_ltf,y_ltf,p.num_carriers,p.num_dead_carriers);
 
+%         if i > p.num_train_packets
+% 
+%             data_start_idx = detected_syms_idcs(i) + p.x_stf_len + p.x_ltf_len;
+%             data_end_idx = data_start_idx + data_length - 1;
+%             shift = 0;
+%             data = y_bb(data_start_idx+shift:data_end_idx+shift);
+%         end
         % [pilots_packet,syms_packet] =extract_data_fxn(data,p.num_symbols_per_packet,p.num_carriers,...
         %                             p.num_prefix,p.num_dead_carriers,p.num_pilots,p.M,p.pilot_idcs,p.dead_idcs)
         %
