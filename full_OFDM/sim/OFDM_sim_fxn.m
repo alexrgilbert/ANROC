@@ -1,5 +1,5 @@
 clear all;
-% close all;
+close all;
 
 addpath('../fxns');
 addpath('../helpers');
@@ -33,9 +33,9 @@ d.sim = true;
 d.h = h;
 d.H = H;
 
-SNR = 200;
+SNR = 15;
 
-[bits, syms, syms_int, signal_bb, signal_bb_ds, signal, detected_syms_gt,...
+[bits_gt, syms_gt, ints_gt, signal_bb, signal_bb_ds, signal, detected_syms_gt,...
  detected_syms_gt_ds] = ofdm_tx_fxn(p);
 
 if p.channel == true
@@ -44,8 +44,8 @@ else
     y = signal;
 end
 
-[y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L]= ofdm_rx_fxn(y,p,d);
+[y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L,H_hat_pilot,syms_eq,bits,ints]= ofdm_rx_fxn(y,p,d);
 
-ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
+ofdm_proc_fxn(bits_gt, syms_gt, ints_gt, signal_bb, signal_bb_ds, signal,...
         detected_syms_gt, detected_syms_gt_ds, y, y_bb_us, y_bb_hp, y_bb,...
-         detected_syms, H_hat_avg, L_hat_avg, L, r, p, d);
+         detected_syms, H_hat_avg, L_hat_avg, L, H_hat_pilot,syms_eq,bits,ints, r, p, d);

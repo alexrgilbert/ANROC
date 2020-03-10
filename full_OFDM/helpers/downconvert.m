@@ -3,6 +3,9 @@ function [y_bb,y_bb_hp] = downconvert(y, Fc, RX_Fs, BW, filter_complex)
     carrier_i = zeros(1,length(y));
     carrier_q = zeros(1,length(y));
     for n = 0:length(y)-1
+        % carrier_i(1,n+1) = sqrt(2)*cos(Fc*(2*pi) * n / RX_Fs);
+        % carrier_q(1,n+1) = -sqrt(2)*sin(Fc*(2*pi) * n / RX_Fs);
+
         carrier_i(1,n+1) = sqrt(2)*cos(Fc*(2*pi) * n / RX_Fs);
         carrier_q(1,n+1) = -sqrt(2)*sin(Fc*(2*pi) * n / RX_Fs);
     end

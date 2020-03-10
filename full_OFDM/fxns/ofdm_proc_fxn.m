@@ -1,6 +1,8 @@
-function ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
+function ofdm_proc_fxn(bits_gt, syms_gt, ints_gt, signal_bb, signal_bb_ds, signal,...
         detected_syms_gt, detected_syms_gt_ds, y, y_bb_us, y_bb_hp, y_bb,...
-         detected_syms, H_hat_avg, L_hat_avg, L, r, p, d)
+         detected_syms, H_hat_avg, L_hat_avg, L, H_hat_pilot,syms_eq,bits,ints,...
+          r, p, d)
+
 
      addpath('../helpers');
 
@@ -10,9 +12,7 @@ function ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
     packet_data_syms_length = (p.num_symbols_per_packet * num_data_carriers);
     packet_data_bits_length = packet_data_syms_length * max(log2(p.M),1);
 
-
-    bits = randi([0,1],1,(p.num_packets*packet_data_bits_length));
-    len_bits = length(bits);
+    len_bits = p.num_packets*packet_data_bits_length;
 
     num_symbols = ceil ( len_bits /  (num_data_carriers*max(log2(p.M),1)) );
     num_packets = ceil ( num_symbols /  p.num_symbols_per_packet );
@@ -87,30 +87,34 @@ function ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
         if p.plot_separate == false
             subplot(3,2,1:2);
         end
-        plot(make_time_axis(y,p.RX_Fs),abs(y));title('Post-RX: Upconverted Unfiltered Upsampled Signal Magnitude');
+        ta_y = make_time_axis(y,p.RX_Fs);
+        plot(ta_y(100:end),abs(y(100:end)));title('Post-RX: Upconverted Unfiltered Upsampled Signal Magnitude');
         if p.plot_separate == true
             figure;
         else
             subplot(3,2,3);
         end
-        plot(make_time_axis(y_bb_hp,p.RX_Fs),abs(y_bb_hp));title('Post-RX: Baseband Unfiltered Upsampled Signal Magnitude');
+        ta_y_bb_hp = make_time_axis(y_bb_hp,p.RX_Fs);
+        plot(ta_y_bb_hp(100:end),real(y_bb_hp(100:end)));title('Post-RX: Baseband Unfiltered Upsampled Signal Magnitude');
         if p.plot_separate == true
             figure;
         else
             subplot(3,2,4);
         end
-        plot(make_time_axis(y_bb_us,p.RX_Fs),abs(y_bb_us));title('Post-RX: Baseband Filtered Upsampled Signal Magnitude');
+        ta_y_bb_us = make_time_axis(y_bb_us,p.RX_Fs);
+        plot(ta_y_bb_us(100:end),imag(y_bb_us(100:end)));title('Post-RX: Baseband Filtered Upsampled Signal Magnitude');
         if p.plot_separate == true
             figure;
         else
             subplot(3,2,5:6);
         end
-        plot(make_time_axis(y_bb,p.BW),abs(y_bb));title('Post-RX: Baseband Filtered Downsampled Signal Magnitude');
+        ta_y_bb = make_time_axis(y_bb,p.BW);
+        plot(ta_y_bb(100:end),abs(y_bb(100:end)));title('Post-RX: Baseband Filtered Downsampled Signal Magnitude');
     end
 
     if p.plot_comparison == true
         start_idcs_ds = find(detected_syms);
-        start_idx_ds = start_idcs_ds(1);
+        start_idx_ds = max(0,-100+start_idcs_ds(1));
         end_idx_ds = start_idcs_ds(end) + (packet_length / p.us_rate) - 1;
         idx_len_ds = end_idx_ds - start_idx_ds;
 
@@ -119,12 +123,12 @@ function ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
         idx_len = end_idx - start_idx;
 
         start_idcs_gt = find(detected_syms_gt);
-        start_idx_gt = start_idcs_gt(1);
+        start_idx_gt = max(0,-100+start_idcs_gt(1));
         end_idx_gt = start_idcs_gt(end) + (packet_length) - 1;
         idx_len_gt = end_idx_gt - start_idx_gt;
 
         start_idcs_gt_ds = find(detected_syms_gt_ds);
-        start_idx_gt_ds = start_idcs_gt_ds(1);
+        start_idx_gt_ds = max(0,-100+start_idcs_gt_ds(1));
         end_idx_gt_ds = start_idcs_gt_ds(end) + (packet_length / p.us_rate) - 1;
         idx_len_gt_ds = end_idx_gt_ds - start_idx_gt_ds;
 
@@ -141,10 +145,12 @@ function ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
         figure;
         max_len = max(idx_len_gt_ds,idx_len_ds);
         signal_bb_ds_ta = make_time_axis(signal_bb_ds,p.BW);
-        plot(signal_bb_ds_ta(start_idx_gt_ds:min(start_idx_gt_ds+max_len,length(signal_bb_ds_ta)))-signal_bb_ds_ta(start_idx_gt_ds),abs(signal_bb_ds(start_idx_gt_ds:min(start_idx_gt_ds+max_len,length(signal_bb_ds)))));
+        signal_bb_ds_normalized = signal_bb_ds / max(signal_bb_ds,[],'all');
+        plot(signal_bb_ds_ta(start_idx_gt_ds:min(start_idx_gt_ds+max_len,length(signal_bb_ds_ta)))-signal_bb_ds_ta(start_idx_gt_ds),abs(signal_bb_ds_normalized(start_idx_gt_ds:min(start_idx_gt_ds+max_len,length(signal_bb_ds)))));
         hold on;
         y_bb_ta = make_time_axis(y_bb,p.BW);
-        plot(y_bb_ta(start_idx_ds:min(start_idx_ds+max_len,length(y_bb_ta)))-y_bb_ta(start_idx_ds),abs(y_bb(start_idx_ds:min(start_idx_ds+max_len,length(y_bb)))));
+        y_bb_normalized = y_bb / max(y_bb,[],'all');
+        plot(y_bb_ta(start_idx_ds:min(start_idx_ds+max_len,length(y_bb_ta)))-y_bb_ta(start_idx_ds),abs(y_bb_normalized(start_idx_ds:min(start_idx_ds+max_len,length(y_bb)))));
         r_ta = make_time_axis(r,p.BW);
         r_normalized = r / max(r,[],'all');
         plot(r_ta(start_idx_ds:min(start_idx_ds+max_len,length(r_ta)))-r_ta(start_idx_ds),r_normalized(start_idx_ds:min(start_idx_ds+max_len,length(r_normalized))));
@@ -162,7 +168,7 @@ function ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
             start_idcs_ds-start_idcs_gt_ds
             start_idcs_ds
             start_idcs_gt_ds
-                
+
         else
             min_length = min(length(start_idcs_ds),length(start_idcs_gt_ds));
             start_idcs_ds(1:min_length)-start_idcs_gt_ds(1:min_length)
@@ -182,6 +188,9 @@ function ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
         if d.sim == true
             stem(1:1:length(d.H),abs(d.H),'r'); legend_strs{end+1} = 'H GT Mag';
         end
+        if p.plot_pilot_est == true
+            stem(1:1:length(H_hat_pilot),abs(H_hat_pilot),'k','*'); legend_strs{end+1} = 'H Pilot Estimated Mag';
+        end
         if p.plot_L == true
             stem(1:1:length(L_hat_avg),abs(L_hat_avg),'b','*'); legend_strs{end+1} = 'L Estimated Mag';
             stem(1:1:length(L),abs(L),'m'); legend_strs{end+1} = 'L GT Mag';
@@ -196,6 +205,9 @@ function ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
          hold on;
          if d.sim == true
              stem(1:1:length(d.H),angle(d.H),'y'); legend_strs{end+1} = 'H GT Phase';
+         end
+         if p.plot_pilot_est == true
+             stem(1:1:length(H_hat_pilot),angle(H_hat_pilot),'c','*'); legend_strs{end+1} = 'H Pilot Estimated Phase';
          end
          if p.plot_L == true
              stem(1:1:length(L_hat_avg),angle(L_hat_avg),'k','*'); legend_strs{end+1} = 'L Estimated Phase';
@@ -212,6 +224,9 @@ function ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
           if d.sim == true
               stem(1:1:length(d.H),real(d.H),'r'); legend_strs{end+1} = 'H GT Real';
           end
+          if p.plot_pilot_est == true
+              stem(1:1:length(H_hat_pilot),real(H_hat_pilot),'k','*'); legend_strs{end+1} = 'H Pilot Estimated Real';
+          end
           if p.plot_L == true
               stem(1:1:length(L_hat_avg),real(L_hat_avg),'b','*'); legend_strs{end+1} = 'L Estimated Real';
               stem(1:1:length(L),real(L),'m'); legend_strs{end+1} = 'L GT Real';
@@ -227,6 +242,9 @@ function ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
            if d.sim == true
                stem(1:1:length(d.H),imag(d.H),'y'); legend_strs{end+1} = 'H GT Imaginary';
            end
+           if p.plot_pilot_est == true
+               stem(1:1:length(H_hat_pilot),imag(H_hat_pilot),'c','*'); legend_strs{end+1} = 'H Pilot Estimated Imaginary';
+           end
            if p.plot_L == true
                stem(1:1:length(L_hat_avg),imag(L_hat_avg),'k','*'); legend_strs{end+1} = 'L Estimated Imaginary';
                stem(1:1:length(L),imag(L),'r'); legend_strs{end+1} = 'L GT Imaginary';
@@ -234,6 +252,28 @@ function ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
            legend(legend_strs);
             title('Average Channel Estimate vs Actual Imaginary');
     end
+
+    if p.plot_data == true
+        figure;
+        legend_strs = {};
+        refpts = complex(qammod((0:(p.M-1))',p.M,'gray','InputType','int','UnitAveragePower',true'));
+        plot(syms_eq,'bo'); legend_strs{end+1} = 'Est Syms';
+        hold on;
+        plot(complex(syms_gt),'go'); legend_strs{end+1} = 'GT Syms';
+        plot(refpts,'r*'); legend_strs{end+1} = 'Refpts';
+        xlabel('In-Phase');
+        ylabel('Quadrature');
+        legend(legend_strs);
+        title('Received Data');
+
+
+        min_length = min(length(bits_gt),length(bits));
+        BER = sum((bits_gt(1:min_length) ~= bits(1:min_length)))/min_length;
+        BLER = sum((ints_gt(1:min_length) ~= ints(1:min_length)))/min_length;
+        disp(strcat('BER = ',num2str(BER),' BLER = ',num2str(BLER)));
+    end
+
+
 end
 
 

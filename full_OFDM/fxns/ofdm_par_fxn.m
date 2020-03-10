@@ -24,7 +24,7 @@ function p = ofdm_par_fxn()
 
     p.M = 2;
     p.num_carriers = 64;
-    p.num_packets = 16;
+    p.num_packets = 20;
     p.num_train_packets = 4;
     p.num_dead_carriers = 12;
     p.dead_idcs = [1 28:38];
@@ -41,15 +41,15 @@ function p = ofdm_par_fxn()
     p.random_range = [((p.x_stf_len + p.x_ltf_len) * 2) ((p.x_stf_len + p.x_ltf_len) * 10)];
     p.detection_peaks = 9;
     p.thresh_factor = 2;
-    p.random_start_flag = true;
-    p.padding = true;
+    p.random_start_flag = false;
+    p.padding = false;
     p.upconvert = true;%%%
     p.filter_complex = true;
     p.upsample = true;%%%
     p.channel = true;%%%
-    p.num_taps = 2;
+    p.num_taps = 3;
     p.broadband = false;
-    p.tap_delay_factor = 3;
+    p.tap_delay_factor = 2;
     if p.upsample == false
         p.us_rate = 1;
         p.ds_rate = 1;
@@ -97,12 +97,14 @@ function p = ofdm_par_fxn()
     %     p.random_range = [0 0];
     % end
 
-    p.plot_spectrum = false;
+    p.plot_spectrum = true;
     p.plot_separate = false;
-    p.plot_signal = false;
-    p.plot_comparison = false;
+    p.plot_signal = true;
+    p.plot_comparison = true;
     p.print_detection = true;
     p.plot_channel_estimation = true;
     p.plot_L = false;
+    p.plot_pilot_est = true;
+    p.plot_data = true;
 
 end

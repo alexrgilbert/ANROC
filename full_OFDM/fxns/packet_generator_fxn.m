@@ -65,68 +65,16 @@ function [x,x_upsampled,syms,syms_int] = packet_generator_fxn(M,bits,x_stf_len,.
             ofdm_sym(data_mask) = syms(start_idx:end_idx);
             ofdm_sym(pilot_mask) = pilot;
 
-            ofdm_sym = ifft(ofdm_sym);
+            ofdm_sym_ifft = ifft(ofdm_sym,64);
 
             prefix_start_idx = num_carriers - num_prefix + 1;
             prefix_end_idx = num_carriers;
-            full_ofdm_sym = [ofdm_sym(prefix_start_idx:prefix_end_idx) ofdm_sym];
+            full_ofdm_sym = [ofdm_sym_ifft(prefix_start_idx:prefix_end_idx) ofdm_sym_ifft];
             full_ofdm_sym(1) = .5 * full_ofdm_sym(1);
             full_ofdm_sym(end) = .5 * full_ofdm_sym(end);
 
             x_data = [x_data full_ofdm_sym];
         end
-
-        %         pilot_syms = complex(zeros(1,(num_symbols_per_packet*(num_carriers-num_dead_carriers))),...
-        %                               zeros(1,(num_symbols_per_packet*(num_carriers-num_dead_carriers))));
-        %
-        % for ofdmsymbol_index = 1:num_symbols_per_packet
-        %     symbol_start = (ofdmsymbol_index-1)*(num_carriers-num_dead_carriers-num_pilots) + 1;
-        %     pilot_symbol_start = (ofdmsymbol_index-1)*(num_carriers-num_dead_carriers) + 1;
-        %     pilot_syms((pilot_symbol_start):(pilot_symbol_start+5)) = ...
-        %         syms(symbol_start:(symbol_start+5));
-        %     pilot_syms(pilot_symbol_start+6) = pilot;
-        %     pilot_syms((pilot_symbol_start+7):(pilot_symbol_start+21)) = ...
-        %         syms(symbol_start+6:(symbol_start+20));
-        %     pilot_syms(pilot_symbol_start+22) = pilot;
-        %     pilot_syms((pilot_symbol_start+23):(pilot_symbol_start+37)) = ...
-        %         syms(symbol_start+21:(symbol_start+35));
-        %     pilot_syms(pilot_symbol_start+38) = pilot;
-        %     pilot_syms((pilot_symbol_start+39):(pilot_symbol_start+47)) = ...
-        %         syms(symbol_start+36:(symbol_start+44));
-        %     pilot_syms(pilot_symbol_start+48) = pilot;
-        %     pilot_syms((pilot_symbol_start+49):(pilot_symbol_start+51)) = ...
-        %         syms(symbol_start+45:(symbol_start+47));
-        % end
-        %
-        % padded_syms = complex(zeros(1,(num_symbols_per_packet*(num_carriers))),...
-        %                       zeros(1,(num_symbols_per_packet*(num_carriers))));
-        %
-        % for ofdmsymbol_index = 1:num_symbols_per_packet
-        %     symbol_start = (ofdmsymbol_index-1)*(num_carriers-num_dead_carriers) + 1;
-        %     padded_symbol_start = (ofdmsymbol_index-1)*(num_carriers) + 1;
-        %     padded_syms((padded_symbol_start+2-1):(padded_symbol_start+27-1)) = ...
-        %         pilot_syms(symbol_start:(symbol_start+26-1));
-        %     padded_syms((padded_symbol_start+39-1):(padded_symbol_start+(num_carriers)-1)) = ...
-        %         pilot_syms(symbol_start+27-1:(symbol_start+num_carriers-num_dead_carriers-1));
-        % end
-        %
-        %
-        %
-        % x_data = complex(zeros(1,(num_symbols_per_packet*(num_carriers + num_prefix))),...
-        %                  zeros(1,(num_symbols_per_packet*(num_carriers + num_prefix))));
-        %
-        % for ofdmsymbol_index = 1:num_symbols_per_packet
-        %     symbol_start = (ofdmsymbol_index-1)*(num_carriers) + 1;
-        %     ofdmsymbol_start = (ofdmsymbol_index-1)*(num_carriers + num_prefix) + 1;
-        %     x_data((ofdmsymbol_start+num_prefix):(ofdmsymbol_start+num_prefix+num_carriers-1)) = ...
-        %         ifft(padded_syms(symbol_start:(symbol_start+num_carriers-1)));
-        %     x_data((ofdmsymbol_start):(ofdmsymbol_start+num_prefix-1)) = ...
-        %         x_data((ofdmsymbol_start+num_carriers):(ofdmsymbol_start+num_carriers+num_prefix-1));
-        %
-        %     x_data(ofdmsymbol_start) = .5 * x_data(ofdmsymbol_start);
-        %     x_data(ofdmsymbol_start+num_carriers+num_prefix-1) = .5 * x_data(ofdmsymbol_start+num_carriers+num_prefix-1);
-        %
-        % end
 
 
         x = [x_stf x_ltf x_data];

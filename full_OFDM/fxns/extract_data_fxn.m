@@ -13,10 +13,9 @@ function [pilots_packet,syms_packet] =extract_data_fxn(data,num_symbols_per_pack
     pilots_packet = [];
     syms_packet = [];
     for sym_num = 1:num_symbols_per_packet
-        start_idx = ((sym_num-1)*(num_data_carriers+num_prefix))+num_prefix+1;
-        end_idx = (sym_num*(num_data_carriers+num_prefix));
-        length(data(start_idx:end_idx))
-        ofdm_sym = fft(data(start_idx:end_idx),64);
+        start_idx = ((sym_num-1)*(num_carriers+num_prefix))+num_prefix+1;
+        end_idx = (sym_num*(num_carriers+num_prefix));
+        ofdm_sym = fft(data(start_idx:end_idx),64);%./H;
 
         sym_data = ofdm_sym(data_mask);
         sym_pilot = ofdm_sym(pilot_mask);
@@ -25,5 +24,5 @@ function [pilots_packet,syms_packet] =extract_data_fxn(data,num_symbols_per_pack
         pilots_packet = [pilots_packet; sym_pilot];
         syms_packet = [syms_packet sym_data];
     end
-    
+
 end
