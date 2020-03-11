@@ -40,17 +40,72 @@ function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L,H_hat_pi
     for i = 1:num_detected
         stf_start_idx = detected_syms_idcs(i);
         stf_end_idx = stf_start_idx + p.x_stf_len - 1;
-        shift = 0;
+
+        m_range = (2 * p.fto_range) + 1;
+        course_start_idx = stf_start_idx - p.fto_range;
+        course_end_idx = stf_end_idx + p.fto_range + 1;
+        if ((stf_start_idx - p.fto_range) < 1)
+            course_start_idx = 1;
+            m_range = m_range + (stf_start_idx - (p.fto_range+1));
+        end
+
+
+        shift_stf = 0;
+        for stf_est = 1:9
+            y_stf_course = y_bb(course_start_idx:course_end_idx);
+            shift_stf = shift_stf + fine_timing_estimation_fxn(y_stf_course,(p.x_stf_len/10),(p.x_stf_len/10),m_range,p.symbol_time);
+            course_start_idx = course_start_idx + (p.x_stf_len/10);
+        end
+        shift_stf = shift_stf / 10
+
+        ltf_start_idx = detected_syms_idcs(i) + p.x_stf_len;
+        ltf_end_idx = ltf_start_idx + p.x_ltf_len - 1;
+        course_start_idx = (2*p.num_prefix) + ltf_start_idx - p.fto_range;
+        course_end_idx = ltf_end_idx + p.fto_range + 1;
+        if ((ltf_end_idx + p.fto_range) > length(y_bb))
+            course_end_idx = length(y_bb);
+            m_range = m_range + (length(y_bb) - (ltf_start_idx + p.fto_range));
+        end
+        y_ltf_course = y_bb(course_start_idx:course_end_idx);
+        shift_ltf = fine_timing_estimation_fxn(y_ltf_course,p.num_carriers,p.num_carriers,m_range,p.symbol_time)
+
+        shift_data = 0;
+        num_fields = 2;
+        if i > p.num_train_packets
+
+            num_fields = num_fields + 1;
+
+            data_start_idx = detected_syms_idcs(i) + p.x_stf_len + p.x_ltf_len;
+            data_end_idx = data_start_idx + data_length - 1;
+            course_start_idx = data_start_idx - p.fto_range;
+            course_end_idx = data_end_idx + p.fto_range + 1;
+
+            if ((data_end_idx + p.fto_range) > length(y_bb))
+                course_end_idx = length(y_bb);
+                m_range = m_range + (length(y_bb) - (data_start_idx + p.fto_range))
+            end
+
+
+            for data_est = 1:(p.num_symbols_per_packet-1)
+                y_data_course = y_bb(course_start_idx:course_end_idx);
+                shift_data = shift_data + fine_timing_estimation_fxn(y_data_course,p.num_prefix,p.num_carriers,m_range,p.symbol_time);
+                course_start_idx = course_start_idx + (p.num_carriers+p.num_prefix);
+            end
+            shift_data = shift_data / p.num_symbols_per_packet
+
+        end
+
+        shift = (shift_data + shift_stf + shift_ltf) / num_fields
+
         y_stf = y_bb(stf_start_idx+shift:stf_end_idx+shift);
 
         stfs = [stfs; y_stf];
 
         %%%TODO:FREQUENCY OFFSET ESTIMATION
-        % freq_offset_avg = freq_offset_avg + frequency_offset_estimator_fxn(y_stf,p.symbol_time);
+        % [freq_offset] = frequency_offset_estimator_fxn(y,k,N,symbol_time)
 
         ltf_start_idx = detected_syms_idcs(i) + p.x_stf_len;
         ltf_end_idx = ltf_start_idx + p.x_ltf_len - 1;
-        shift = 0;
         y_ltf = y_bb(ltf_start_idx+shift:ltf_end_idx+shift);
 
         ltfs = [ltfs; y_ltf];
@@ -61,7 +116,6 @@ function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L,H_hat_pi
 
             data_start_idx = detected_syms_idcs(i) + p.x_stf_len + p.x_ltf_len;
             data_end_idx = data_start_idx + data_length - 1;
-            shift = 0;
             diff = data_end_idx + shift - length(y_bb);
             if diff > 0
                 y_bb = [y_bb zeros(1,diff)];
