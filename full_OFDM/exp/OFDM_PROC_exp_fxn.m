@@ -12,7 +12,13 @@ tx_suffix = '_09_03_2020_11_27_29';
 load(strcat('../save/hardware_tests_tx/tx_variables',tx_suffix,'.mat'));
 load(strcat('../save/hardware_tests_rx/rx_variables',rx_suffix,'.mat'));
 
-p.thresh_factor = 3.5;
+p.thresh_factor = 2;%3.5;
+
+% % % TEMPORARY ADDITIONS % % %
+% p.fto_range = 7;
+% p.align_downconversion = false;
+% p.freq_correct = false;
+% p.fine_timing_align = false;
 
 p.plot_spectrum = true;
 p.plot_separate = false;

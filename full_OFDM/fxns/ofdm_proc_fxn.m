@@ -114,7 +114,7 @@ function ofdm_proc_fxn(bits_gt, syms_gt, ints_gt, signal_bb, signal_bb_ds, signa
 
     if p.plot_comparison == true
         start_idcs_ds = find(detected_syms);
-        start_idx_ds = max(0,-100+start_idcs_ds(1));
+        start_idx_ds = max(1,-100+start_idcs_ds(1));
         end_idx_ds = start_idcs_ds(end) + (packet_length / p.us_rate) - 1;
         idx_len_ds = end_idx_ds - start_idx_ds;
 
@@ -123,12 +123,12 @@ function ofdm_proc_fxn(bits_gt, syms_gt, ints_gt, signal_bb, signal_bb_ds, signa
         idx_len = end_idx - start_idx;
 
         start_idcs_gt = find(detected_syms_gt);
-        start_idx_gt = max(0,-100+start_idcs_gt(1));
+        start_idx_gt = max(1,-100+start_idcs_gt(1));
         end_idx_gt = start_idcs_gt(end) + (packet_length) - 1;
         idx_len_gt = end_idx_gt - start_idx_gt;
 
         start_idcs_gt_ds = find(detected_syms_gt_ds);
-        start_idx_gt_ds = max(0,-100+start_idcs_gt_ds(1));
+        start_idx_gt_ds = max(1,-100+start_idcs_gt_ds(1));
         end_idx_gt_ds = start_idcs_gt_ds(end) + (packet_length / p.us_rate) - 1;
         idx_len_gt_ds = end_idx_gt_ds - start_idx_gt_ds;
 
@@ -254,7 +254,17 @@ function ofdm_proc_fxn(bits_gt, syms_gt, ints_gt, signal_bb, signal_bb_ds, signa
     end
 
     if p.plot_data == true
+
+        min_length = min(length(bits_gt),length(bits));
+        BER = sum((bits_gt(1:min_length) ~= bits(1:min_length)))/min_length;
+        BLER = sum((ints_gt(1:min_length) ~= ints(1:min_length)))/min_length;
+
+        errors = ((ints_gt(1:min_length) ~= ints(1:min_length)));
+        gt_ones = (ints_gt(1:min_length) == 1);
+        gt_zeros = (ints_gt(1:min_length) == 0);
+
         figure;
+        subplot(2,2,1);
         legend_strs = {};
         refpts = complex(qammod((0:(p.M-1))',p.M,'gray','InputType','int','UnitAveragePower',true'));
         plot(syms_eq,'bo'); legend_strs{end+1} = 'Est Syms';
@@ -266,10 +276,45 @@ function ofdm_proc_fxn(bits_gt, syms_gt, ints_gt, signal_bb, signal_bb_ds, signa
         legend(legend_strs);
         title('Received Data');
 
+        subplot(2,2,2);
+        legend_strs = {};
+        refpts = complex(qammod((0:(p.M-1))',p.M,'gray','InputType','int','UnitAveragePower',true'));
+        plot(syms_eq(errors),'bo'); legend_strs{end+1} = 'Est Syms';
+        hold on;
+        plot(complex(syms_gt),'go'); legend_strs{end+1} = 'GT Syms';
+        plot(refpts,'r*'); legend_strs{end+1} = 'Refpts';
+        xlabel('In-Phase');
+        ylabel('Quadrature');
+        legend(legend_strs);
+        title('Errors');
 
-        min_length = min(length(bits_gt),length(bits));
-        BER = sum((bits_gt(1:min_length) ~= bits(1:min_length)))/min_length;
-        BLER = sum((ints_gt(1:min_length) ~= ints(1:min_length)))/min_length;
+
+        subplot(2,2,3);
+        legend_strs = {};
+        refpts = complex(qammod(((p.M-1)),p.M,'gray','InputType','int','UnitAveragePower',true'));
+        plot(syms_eq(gt_ones),'bo'); legend_strs{end+1} = 'Est Syms';
+        hold on;
+        plot(complex(syms_gt),'go'); legend_strs{end+1} = 'GT Syms';
+        plot(refpts,'r*'); legend_strs{end+1} = 'Refpts';
+        xlabel('In-Phase');
+        ylabel('Quadrature');
+        legend(legend_strs);
+        title('GT Ones');
+
+
+        subplot(2,2,4);
+        legend_strs = {};
+        refpts = complex(qammod((0),p.M,'gray','InputType','int','UnitAveragePower',true'));
+        plot(syms_eq(gt_zeros),'bo'); legend_strs{end+1} = 'Est Syms';
+        hold on;
+        plot(complex(syms_gt),'go'); legend_strs{end+1} = 'GT Syms';
+        plot(refpts,'r*'); legend_strs{end+1} = 'Refpts';
+        xlabel('In-Phase');
+        ylabel('Quadrature');
+        legend(legend_strs);
+        title('GT Zeros');
+
+
         disp(strcat('BER = ',num2str(BER),' BLER = ',num2str(BLER)));
     end
 

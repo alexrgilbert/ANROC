@@ -17,13 +17,16 @@ function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L,H_hat_pi
     % num_symbols = ceil ( len_bits /  (num_data_carriers*max(log2(M),1)) );
     % num_packets = ceil ( num_symbols /  num_symbols_per_packet );
 
-    if p.upconvert == true
-        [y_bb_us,y_bb_hp] = downconvert(y, p.Fc, p.RX_Fs, p.BW,p.filter_complex);
-    else
-        y_bb_us = y; y_bb_hp = y;
-    end
+    % if p.upconvert == true
+    %     [y_bb_us,y_bb_hp] = downconvert(y, p.Fc, p.RX_Fs, p.BW,p.filter_complex);
+    % else
+    %     y_bb_us = y; y_bb_hp = y;
+    % end
 
-    y_bb = downsample(y_bb_us, p.ds_rate);
+
+    [y_bb_us,y_bb_hp,y_bb] = downconversion_aligned_fxn(y,p);
+
+
 
     [detected_syms,r] = packet_detection_fxn(x_stf(1:(p.x_stf_len/10)), y_bb, (p.x_stf_len + p.x_ltf_len - 5),p.detection_peaks,p.thresh_factor);
     detected_syms_idcs = find(detected_syms);
@@ -38,70 +41,32 @@ function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L,H_hat_pi
     stfs = [];
     freq_offset_avg = 0;
     for i = 1:num_detected
+
         stf_start_idx = detected_syms_idcs(i);
         stf_end_idx = stf_start_idx + p.x_stf_len - 1;
 
-        m_range = (2 * p.fto_range) + 1;
-        course_start_idx = stf_start_idx - p.fto_range;
-        course_end_idx = stf_end_idx + p.fto_range + 1;
-        if ((stf_start_idx - p.fto_range) < 1)
-            course_start_idx = 1;
-            m_range = m_range + (stf_start_idx - (p.fto_range+1));
-        end
+        y_stf_course = y_bb(stf_start_idx:stf_end_idx);
+        shift_stf = [];
+        % for stf_est = 2:8
+        %     start_idx = ((stf_est-1) * (p.x_stf_len/10)) + 1;
+        %     shift_stf_iter = fine_timing_estimation_fxn(y_stf_course,(p.x_stf_len/10),(p.x_stf_len/10),start_idx,p.fto_range);
+        %     shift_stf = [shift_stf  shift_stf_iter];
+        % end
+        % shift = 0;%mode(shift_stf)
 
 
-        shift_stf = 0;
-        for stf_est = 1:9
-            y_stf_course = y_bb(course_start_idx:course_end_idx);
-            shift_stf = shift_stf + fine_timing_estimation_fxn(y_stf_course,(p.x_stf_len/10),(p.x_stf_len/10),m_range,p.symbol_time);
-            course_start_idx = course_start_idx + (p.x_stf_len/10);
-        end
-        shift_stf = shift_stf / 10
+        % y_stf_course = y_bb(stf_start_idx-p.fto_range:stf_end_idx+p.fto_range+1);
+        % shift = fine_timing_estimation_fxn(y_stf_course,(5*(p.x_stf_len/10)),(5*(p.x_stf_len/10)),p.fto_range+1,p.fto_range)
 
-        ltf_start_idx = detected_syms_idcs(i) + p.x_stf_len;
-        ltf_end_idx = ltf_start_idx + p.x_ltf_len - 1;
-        course_start_idx = (2*p.num_prefix) + ltf_start_idx - p.fto_range;
-        course_end_idx = ltf_end_idx + p.fto_range + 1;
-        if ((ltf_end_idx + p.fto_range) > length(y_bb))
-            course_end_idx = length(y_bb);
-            m_range = m_range + (length(y_bb) - (ltf_start_idx + p.fto_range));
-        end
-        y_ltf_course = y_bb(course_start_idx:course_end_idx);
-        shift_ltf = fine_timing_estimation_fxn(y_ltf_course,p.num_carriers,p.num_carriers,m_range,p.symbol_time)
-
-        shift_data = 0;
-        num_fields = 2;
-        if i > p.num_train_packets
-
-            num_fields = num_fields + 1;
-
-            data_start_idx = detected_syms_idcs(i) + p.x_stf_len + p.x_ltf_len;
-            data_end_idx = data_start_idx + data_length - 1;
-            course_start_idx = data_start_idx - p.fto_range;
-            course_end_idx = data_end_idx + p.fto_range + 1;
-
-            if ((data_end_idx + p.fto_range) > length(y_bb))
-                course_end_idx = length(y_bb);
-                m_range = m_range + (length(y_bb) - (data_start_idx + p.fto_range))
-            end
-
-
-            for data_est = 1:(p.num_symbols_per_packet-1)
-                y_data_course = y_bb(course_start_idx:course_end_idx);
-                shift_data = shift_data + fine_timing_estimation_fxn(y_data_course,p.num_prefix,p.num_carriers,m_range,p.symbol_time);
-                course_start_idx = course_start_idx + (p.num_carriers+p.num_prefix);
-            end
-            shift_data = shift_data / p.num_symbols_per_packet
-
-        end
-
-        shift = (shift_data + shift_stf + shift_ltf) / num_fields
+        shift = 0;
+        detected_syms(stf_start_idx) = 0;
+        detected_syms(stf_start_idx + shift) = 1;
 
         y_stf = y_bb(stf_start_idx+shift:stf_end_idx+shift);
-
         stfs = [stfs; y_stf];
 
-        %%%TODO:FREQUENCY OFFSET ESTIMATION
+
+        % %%%TODO:FREQUENCY OFFSET ESTIMATION
         % [freq_offset] = frequency_offset_estimator_fxn(y,k,N,symbol_time)
 
         ltf_start_idx = detected_syms_idcs(i) + p.x_stf_len;
@@ -116,10 +81,28 @@ function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L,H_hat_pi
 
             data_start_idx = detected_syms_idcs(i) + p.x_stf_len + p.x_ltf_len;
             data_end_idx = data_start_idx + data_length - 1;
-            diff = data_end_idx + shift - length(y_bb);
+
+            diff = data_end_idx + p.fto_range + 1 - length(y_bb);
             if diff > 0
                 y_bb = [y_bb zeros(1,diff)];
             end
+
+
+            if p.fine_timing_align == true
+                y_data_course = y_bb(data_start_idx-p.fto_range:data_end_idx+p.fto_range+1);
+                shifts_data = [];
+                for sym_idx = 1:(p.num_symbols_per_packet-1)
+                    data_course_start_idx = ((sym_idx-1)*(p.num_prefix + p.num_carriers)) + (p.fto_range + 1);
+                    shift_data_iter = fine_timing_estimation_fxn(y_data_course,p.num_prefix,p.num_carriers,data_course_start_idx,p.fto_range)
+                    shifts_data = [shifts_data shift_data_iter];
+                end
+                shift = mode(shifts_data)
+            else
+                shift = 0;
+            end
+
+
+
             data = y_bb(data_start_idx+shift:data_end_idx+shift);
             [pilots_packet,syms_packet] =extract_data_fxn(data,p.num_symbols_per_packet,p.num_carriers,...
                                         p.num_prefix,p.num_dead_carriers,p.num_pilots,p.M,p.pilot_idcs,p.dead_idcs);

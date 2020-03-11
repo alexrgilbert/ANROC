@@ -33,8 +33,12 @@ function p = ofdm_par_fxn()
     p.pilot = complex((1/sqrt(2)),(1/sqrt(2)));
     p.num_prefix = 16;
     p.num_symbols_per_packet = 12;
-    p.x_stf_len = 160;
-    p.x_ltf_len = 160;
+    p.x_stf_len = 160; % = 10 * (num_prefix)
+    p.x_ltf_len = 160; % = 2 * (num_prefix + num_carriers)
+    p.fto_range = 7;
+    p.align_downconversion = false;
+    p.freq_correct = false;
+    p.fine_timing_align = false;
     p.ltf_subchannels = 64;
     p.delta_fs = p.BW / 64;
     p.symbol_time = 1 / p.BW;
