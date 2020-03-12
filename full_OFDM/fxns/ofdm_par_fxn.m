@@ -2,7 +2,7 @@ function p = ofdm_par_fxn()
 
     addpath('../helpers');
 
-    p.save_suffix = datestr(now,'_dd_mm_yyyy_HH_MM_SS');
+    p.save_suffix = datestr(now,'_mm_dd_yyyy_HH_MM_SS');
     p.microphoneRange = [20 20e3];
     p.speakerRange = [85 18e3];
     p.Fc = (diff(p.speakerRange)/2) + p.speakerRange(1);
