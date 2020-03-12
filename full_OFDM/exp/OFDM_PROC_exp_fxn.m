@@ -7,12 +7,12 @@ p = ofdm_par_fxn();
 
 d.sim = false;
 
-rx_suffix = '_09_03_2020_11_27_26';
-tx_suffix = '_09_03_2020_11_27_29';
+rx_suffix = '_03_11_2020_17_58_34';
+tx_suffix = '_03_11_2020_17_58_35_jtof12_q1';
 load(strcat('../save/hardware_tests_tx/tx_variables',tx_suffix,'.mat'));
 load(strcat('../save/hardware_tests_rx/rx_variables',rx_suffix,'.mat'));
 
-p.thresh_factor = 2;%3.5;
+p.thresh_factor = 3;%3.5;
 
 % % % TEMPORARY ADDITIONS % % %
 % p.fto_range = 7;

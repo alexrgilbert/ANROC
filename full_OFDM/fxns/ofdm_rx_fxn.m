@@ -138,9 +138,12 @@ function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L,H_hat_pi
         %      legend(legend_strs);
         %       title('Channel Estimate vs Actual Phase');
         % end
-
-        H_hat_avg = H_hat_avg + (H_hat / num_detected);
-        L_hat_avg = L_hat_avg + (L_hat / num_detected);
+        % avg_count = num_detected;
+        counted_packets = [1:num_detected];
+        if (sum((counted_packets == i)) > 0)
+            H_hat_avg = H_hat_avg + (H_hat / length(counted_packets));
+            L_hat_avg = L_hat_avg + (L_hat / length(counted_packets));
+        end
     end
 
 
