@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configurations XML_version="1.2" id="configurations_0">
+    <configuration XML_version="1.2" id="configuration_0">
+        <instance XML_version="1.2" desc="Texas Instruments XDS100v2 USB Emulator" href="connections/TIXDS100v2_Connection.xml" id="Texas Instruments XDS100v2 USB Emulator" xml="TIXDS100v2_Connection.xml" xmlpath="connections"/>
+        <connection XML_version="1.2" id="Texas Instruments XDS100v2 USB Emulator">
+            <instance XML_version="1.2" href="drivers/tixds100v2icepick_c.xml" id="drivers" xml="tixds100v2icepick_c.xml" xmlpath="drivers"/>
+            <instance XML_version="1.2" href="drivers/tixds100v2c674x.xml" id="drivers" xml="tixds100v2c674x.xml" xmlpath="drivers"/>
+            <instance XML_version="1.2" href="drivers/tixds100v2pru.xml" id="drivers" xml="tixds100v2pru.xml" xmlpath="drivers"/>
+            <instance XML_version="1.2" href="drivers/tixds100v2arm9.xml" id="drivers" xml="tixds100v2arm9.xml" xmlpath="drivers"/>
+            <instance XML_version="1.2" href="drivers/tixds100v2etb11.xml" id="drivers" xml="tixds100v2etb11.xml" xmlpath="drivers"/>
+            <platform XML_version="1.2" id="platform_0">
+                <instance XML_version="1.2" desc="OMAPL138" href="devices/OMAPL138.xml" id="OMAPL138" xml="OMAPL138.xml" xmlpath="devices"/>
+            <device HW_revision="1" XML_version="1.2" description="OMAPL138 - ARM9 and C674x Floating point DSP with PRU" id="OMAPL138" partnum="OMAPL138" simulation="no">
+                    <router HW_revision="" XML_version="1.2" description="" id="device_0" isa="ICEPICK_C">
+                        <subpath id="device_1">
+                            <cpu HW_revision="" XML_version="1.2" desc="C674X_0" description="" deviceSim="false" id="device_2" isa="TMS320C674X">
+                                <property Type="filepathfield" Value="..\..\..\..\L138_support\OMAP-L138_LCDK.gel" id="GEL File"/>
+                            </cpu>
+                        </subpath>
+                    </router>
+                </device>
+            </platform>
+        </connection>
+    </configuration>
+</configurations>
