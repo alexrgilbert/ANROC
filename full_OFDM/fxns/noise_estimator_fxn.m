@@ -1,18 +1,24 @@
-function noise_var = noise_estimator_fxn(stfs,ltfs)
+function [noise_var,noise_var_pilots] = noise_estimator_fxn(stfs,ltfs,pilots)
     stf_var_i = 2*var(real(stfs(:,17:144)),1,1);
     stf_var_q = 2*var(imag(stfs(:,17:144)),1,1);
     stf_var = (stf_var_i + stf_var_q)/2;
     stf_var = mean(stf_var);
-    -10*log10(stf_var)
+    -10*log10(stf_var);
 
     ltf_var_i = 2*var(real(ltfs(:,17:144)),1,1);
     ltf_var_q = 2*var(imag(ltfs(:,17:144)),1,1);
     ltf_var = (ltf_var_i + ltf_var_q)/2;
     ltf_var = mean(ltf_var);
-    -10*log10(ltf_var)
+    -10*log10(ltf_var);
 
     noise_var = (stf_var + ltf_var)/2;
     -10*log10(noise_var)
+
+    pilots_var_i = 2*var(real(pilots),1,1);
+    pilots_var_q = 2*var(imag(pilots),1,1);
+    noise_var_pilots = (pilots_var_i + pilots_var_q)/2;
+    noise_var_pilots = mean(noise_var_pilots);
+    -10*log10(noise_var_pilots)
 end
 
 

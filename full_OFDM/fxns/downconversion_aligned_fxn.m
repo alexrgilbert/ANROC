@@ -7,6 +7,7 @@ function [y_bb_us,y_bb_hp,y_bb] = downconversion_aligned_fxn(y,p)
         [y_bb_us_full,y_bb_hp_full] = downconvert(y, p.Fc, p.RX_Fs, p.BW,p.filter_complex);
     else
         y_bb_us_full = y;
+        y_bb_hp_full = y;
     end
 
     y_bb_full = downsample(y_bb_us_full, p.ds_rate);

@@ -46,10 +46,10 @@ function p = ofdm_par_fxn()
     p.detection_peaks = 9;
     p.thresh_factor = 2;
     p.random_start_flag = false;
-    p.padding = true;
-    p.upconvert = true;%%%
+    p.padding = false;
+    p.upconvert = false;%%%
     p.filter_complex = true;
-    p.upsample = true;%%%
+    p.upsample = false;%%%
     p.channel = true;%%%
     p.num_taps = 3;
     p.broadband = false;
@@ -101,14 +101,14 @@ function p = ofdm_par_fxn()
     %     p.random_range = [0 0];
     % end
 
-    p.plot_spectrum = true;
+    p.plot_spectrum = false;
     p.plot_separate = false;
-    p.plot_signal = true;
-    p.plot_comparison = true;
-    p.print_detection = true;
-    p.plot_channel_estimation = true;
+    p.plot_signal = false;
+    p.plot_comparison = false;
+    p.print_detection = false;
+    p.plot_channel_estimation = false;
     p.plot_L = false;
-    p.plot_pilot_est = true;
+    p.plot_pilot_est = false;
     p.plot_data = true;
 
 end

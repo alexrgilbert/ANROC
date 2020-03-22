@@ -40,7 +40,8 @@ function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L,H_hat_pi
     ltfs = [];
     stfs = [];
     freq_offset_avg = 0;
-    for i = 1:num_detected
+    num_processed = num_detected;%6;%
+    for i = 1:num_processed%num_detected
 
         stf_start_idx = detected_syms_idcs(i);
         stf_end_idx = stf_start_idx + p.x_stf_len - 1;
@@ -93,7 +94,7 @@ function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L,H_hat_pi
                 shifts_data = [];
                 for sym_idx = 1:(p.num_symbols_per_packet-1)
                     data_course_start_idx = ((sym_idx-1)*(p.num_prefix + p.num_carriers)) + (p.fto_range + 1);
-                    shift_data_iter = fine_timing_estimation_fxn(y_data_course,p.num_prefix,p.num_carriers,data_course_start_idx,p.fto_range)
+                    shift_data_iter = fine_timing_estimation_fxn(y_data_course,p.num_prefix,p.num_carriers,data_course_start_idx,p.fto_range);
                     shifts_data = [shifts_data shift_data_iter];
                 end
                 shift = mode(shifts_data)
@@ -139,22 +140,27 @@ function [y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L,H_hat_pi
         %       title('Channel Estimate vs Actual Phase');
         % end
         % avg_count = num_detected;
-        counted_packets = [1:num_detected];
+        counted_packets = [1:num_processed];
+        denominator = length(counted_packets);
         if (sum((counted_packets == i)) > 0)
-            H_hat_avg = H_hat_avg + (H_hat / length(counted_packets));
-            L_hat_avg = L_hat_avg + (L_hat / length(counted_packets));
+            H_hat_avg = H_hat_avg + (H_hat / denominator);
+            L_hat_avg = L_hat_avg + (L_hat / denominator);
         end
     end
 
 
-    H_hat_pilot = channel_estimator_pilots_fxn(pilots,p.num_carriers,p.pilot,p.pilot_idcs);
-
-    noise_var = noise_estimator_fxn(stfs,ltfs);
+    if num_detected > p.num_train_packets
+        H_hat_pilot = channel_estimator_pilots_fxn(pilots,p.num_carriers,p.pilot,p.pilot_idcs);
+    else
+        H_hat_pilot = zeros(1,p.num_carriers);
+    end
+        
+    [noise_var,noise_var_pilots] = noise_estimator_fxn(stfs,ltfs,pilots);
 
 %     noise_var = noise_var_est
 
 %     noise_var = 10.^(-200/10);
-    [syms_eq,bits,ints] = decode_data_fxn(syms,num_detected-p.num_train_packets,p.num_symbols_per_packet,p.num_carriers,...
+    [syms_eq,bits,ints] = decode_data_fxn(syms,num_processed-p.num_train_packets,p.num_symbols_per_packet,p.num_carriers,...
                                                         p.num_pilots,p.num_dead_carriers,H_hat_avg,noise_var,p.M,p.pilot_idcs,p.dead_idcs);
 
 %     [syms_eq,bits,ints,~] = decode_data_hw(y_bb,p.x_stf_len,p.x_ltf_len,p.num_prefix,p.num_carriers,p.num_symbols_per_packet,d.H,200,p.M);

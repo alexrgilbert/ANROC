@@ -17,7 +17,7 @@ function [m_max] = fine_timing_estimation_fxn(y,k,N,start_idx,m_range)
             corr = corr + (y_conj(1,idx+N)*y(1,idx)) ;
 
         end
-        corr = abs(corr)
+        corr = abs(corr);
         if corr > corr_max
             m_max = m;
             corr_max = corr;
