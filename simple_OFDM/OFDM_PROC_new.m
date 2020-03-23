@@ -1,5 +1,5 @@
-% clear all;
-% close all;
+clear all;
+close all;
 
 speakerRange = [20 20e3];
 Fc = (diff(speakerRange)/2) + speakerRange(1);
@@ -31,13 +31,20 @@ packet_data_bits_length = packet_data_syms_length * max(log2(M),1);
 
 random_range = [(train_packet_length / 10) (train_packet_length * 10)];
 
-load tx_variables.mat;
-load rx_variables.mat;
+load tx_variables_3_3_2020_7_30.mat;
+load rx_variables_3_3_2020_7_30.mat;
+
+x_bb = downsample(signal_bb(1,1:end), ds_rate);
+figure;periodogram(x_bb,[],length(x_bb),BW,'centered');title('Pre-TX: Baseband Downsampled (Post-Proc) Signal Spectrum');
+figure;periodogram(signal_bb,[],length(signal_bb),TX_Fs,'centered'); title('Pre-TX: Baseband Upsampled Signal Spectrum');
+figure;periodogram(signal,[],length(signal),TX_Fs,'centered'); title('Pre-TX: Upconverted Signal Spectrum');
 
 len_bits = length(bits);
 
 num_symbols = ceil ( len_bits /  (num_data_carriers*max(log2(M),1)) );
 num_packets = ceil ( num_symbols /  num_symbols_per_packet );
+
+y = y';
 
 time_axis = 0:(1/RX_Fs):(((length(y)/RX_Fs))-(1/RX_Fs));
 time_axis_bb = 0:(1/BW):(((length(y)/(ds_rate*BW)))-(1/BW));
@@ -46,11 +53,10 @@ time_axis_bb = 0:(1/BW):(((length(y)/(ds_rate*BW)))-(1/BW));
 y_bb = downsample(y_bb_us(1,1:end), ds_rate);
 
 
-figure;periodogram(y_bb_hp,[],length(y_bb_hp),TX_Fs,'centered');title('y_bb_hp');
-figure;periodogram(y_bb_us,[],length(y_bb_us),TX_Fs,'centered'); title('y_bb_us');
-x_bb = downsample(signal_bb(1,1:end), ds_rate);
-figure;periodogram(x_bb,[],length(x_bb),BW,'centered');title('x_bb');
-figure; periodogram(y_bb,[],length(y_bb),BW,'centered');title('y_bb');
+figure;periodogram(y,[],length(y),TX_Fs,'centered');title('Post-RX: Upconverted Unfiltered Upsampled Signal Spectrum');
+figure;periodogram(y_bb_hp,[],length(y_bb_hp),TX_Fs,'centered');title('Post-RX: Baseband Unfiltered Upsampled Signal Spectrum');
+figure;periodogram(y_bb_us,[],length(y_bb_us),TX_Fs,'centered');title('Post-RX: Baseband Filtered Upsampled Signal Spectrum');
+figure; periodogram(y_bb,[],length(y_bb),BW,'centered');title('Post-RX: Baseband Filtered Downsampled Signal Spectrum');
 
 [detected_syms,r] = packet_detection_sim_audio(x_stf(1:16), y_bb, (x_stf_len + x_ltf_len - 5));
 start_idcs = find(detected_syms);
@@ -59,12 +65,12 @@ start_idx = start_idcs(1);
 start_idcs_gt = find(detected_syms_gt);
 start_idx_gt = start_idcs_gt(1);
 
-figure;plot(time_axis,abs(y)); hold on;plot(time_axis,abs(signal));
-figure;plot(time_axis_bb(start_idx:end),abs(y_bb(start_idx:end)));
-hold on;plot(time_axis_bb(start_idx_gt:end),abs(x_bb(start_idx_gt:end)));
-plot(time_axis_bb(start_idx:end),r(start_idx:end));
-stem(time_axis_bb(start_idx:end),detected_syms(start_idx:end));
-figure; stem(detected_syms - detected_syms_gt);
+figure;plot(abs(y)); hold on;plot(abs(signal));
+figure;plot(abs(y_bb(start_idx:end)));
+hold on;plot(abs(x_bb(start_idx_gt:end)));
+plot(r(start_idx:end));
+stem(detected_syms(start_idx:end));
+figure; stem(detected_syms); hold on; stem(detected_syms_gt);
 
 if (length(find(detected_syms)) == length(find(detected_syms_gt)))
         find(detected_syms)-find(detected_syms_gt)

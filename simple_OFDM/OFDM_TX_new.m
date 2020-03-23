@@ -41,6 +41,8 @@ bits = [bits zeros(1,((num_packets * packet_data_bits_length) - len_bits))];
 
 syms = complex(zeros(1,num_packets*packet_data_syms_length),...
                     zeros(1,num_packets*packet_data_syms_length));
+signal_bb_downsampled = complex(zeros(1,20*(packet_length/us_rate)),...
+            zeros(1,20*(packet_length/us_rate)));
 signal_bb = complex(zeros(1,20*packet_length),...
             zeros(1,20*packet_length));
 
@@ -49,11 +51,13 @@ j = 1;
 for i = 1:20
    if (mod(i,5) == 2)
        packet_bits = bits(1,(((j-1)*packet_data_bits_length)+1):(j*packet_data_bits_length));
-       [x,syms_packet] = packet_generator_sim_audio(M,packet_bits,x_stf_len,...
+       [x_downsampled,x,syms_packet] = packet_generator_sim_audio(M,packet_bits,x_stf_len,...
         x_ltf_len,delta_fs,symbol_time,us_rate,num_symbols_per_packet,num_carriers,...
         num_prefix,num_dead_carriers,num_pilots);
        signal_bb(((i-1) * packet_length)+1:...
-           ((i) * packet_length)) = x;
+            ((i) * packet_length)) = x;
+       signal_bb_downsampled(((i-1) * (packet_length/us_rate))+1:...
+            ((i) * (packet_length/us_rate))) = x_downsampled;
        syms(((j-1) * packet_data_syms_length)+1:(j * packet_data_syms_length)) = syms_packet;
        detected_syms_gt((((i-1) * (packet_length/us_rate)))+1) = 1;
        j = j+1;
@@ -63,8 +67,5 @@ end
 
 signal = upconvert(signal_bb,Fc,TX_Fs);
 sound(signal, TX_Fs);
-
-figure;periodogram(signal_bb,[],length(signal_bb),TX_Fs,'centered'); title('signal_bb');
-figure;periodogram(signal,[],length(signal),TX_Fs,'centered'); title('signal_bb');
 
 save tx_variables.mat bits syms signal_bb signal detected_syms_gt;

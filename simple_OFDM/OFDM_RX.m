@@ -1,4 +1,5 @@
-    close all;
+
+close all;
 clear all;
 clc;
 Fc = 500;

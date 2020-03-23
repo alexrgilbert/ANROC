@@ -1,16 +1,14 @@
-function x_upsampled = packet_generator(bits_per_sym,bits,x_stf_len)%,us_rate)
-
-    
+function [x,syms,num_carriers,prefix_len,num_ofdmsymbols,ltf_len,stf_len] = packet_generator(bits_per_sym)
 
     % STF
     S = (1 / sqrt(2)) * [0, 0, (1 + 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, ...
     0, 0, 0, 0, (-1 - 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, (1 + 1j), 0, 0];
 
-    x_stf = zeros(1,x_stf_len);
+    x_stf = zeros(1,160);
     for time_index = 1:length(x_stf)
         time_sample = 0;
         for freq_index = 1: length(S)
-            time_sample = time_sample + (S(freq_index) * exp(1j*2*pi*1250*(1/44100)*(time_index-1)*(freq_index-27)));
+            time_sample = time_sample + (S(freq_index) * exp(1j*2*pi*625*22.68*(10^(-6))*(time_index-1)*(freq_index-27)));
         end
         x_stf(time_index) = (1 / sqrt(12)) * time_sample;
     end
@@ -34,24 +32,19 @@ function x_upsampled = packet_generator(bits_per_sym,bits,x_stf_len)%,us_rate)
     num_ofdmsymbols = 12;
 
     % Data
-    % bits = randi([0,1],1,(num_ofdmsymbols*num_carriers*max(log2(M),1)));
-    num_ofdmsymbols = ceil(length(bits) / (num_carriers)*max(log2(M),1));
-    bits2pad = num_ofdmsymbols*(num_carriers)*max(log2(M),1);
-    bits_padded = zeros(1,bits2pad);
-    bits_padded(1,1:length(bits)) = bits;
-       ceil(length(bits) / (num_carriers)*max(log2(M),1))
-    syms = (pskmod(bits_padded',M));%,'gray','InputType','bit','UnitAveragePower',true))';
+    bits = randi([0,1],1,(num_ofdmsymbols*num_carriers*max(log2(M),1)));
+    syms = (pskmod(bits',M));%,'gray','InputType','bit','UnitAveragePower',true))';
 
-%     figure;
-%     refpts = pskmod((0:(M-1))',M);
-%     plot(syms,'co');
-%     hold on;
-%     plot(refpts,'r*');
-% %         text(real(refpts)+0.1,imag(refpts),num2str((0:3)'))
-%     xlabel('In-Phase');
-%     ylabel('Quadrature');
-%     legend('syms','refpts', ...
-%         'Reference constellation','location','nw');
+    figure;
+    refpts = pskmod((0:(M-1))',M);
+    plot(syms,'co');
+    hold on;
+    plot(refpts,'r*');
+%         text(real(refpts)+0.1,imag(refpts),num2str((0:3)'))
+    xlabel('In-Phase');
+    ylabel('Quadrature');
+    legend('syms','refpts', ...
+        'Reference constellation','location','nw');
 
     x_data = complex(zeros(1,(num_ofdmsymbols*(num_carriers + num_prefix))),...
                      zeros(1,(num_ofdmsymbols*(num_carriers + num_prefix))));
@@ -66,15 +59,9 @@ function x_upsampled = packet_generator(bits_per_sym,bits,x_stf_len)%,us_rate)
             x_data((ofdmsymbol_start+num_carriers):(ofdmsymbol_start+num_carriers+num_prefix-1));
     end
 
-    x = [x_stf x_ltf x_data];
+    ltf_len = length(x_ltf);
+    stf_len = length(x_stf);
 
-    x_upsampled = x;
-%     us_len = us_rate*length(x);
-%     x_upsampled = complex(zeros(1,us_len),...
-%                         zeros(1,us_len));
-%     for i = 1:(us_len)
-%         downsampled_idx = floor((i-1)/2.25)+1;
-%         x_upsampled(1,i) = x(1,downsampled_idx);
-%     end
+    x = [x_stf x_ltf x_data];
 
 end

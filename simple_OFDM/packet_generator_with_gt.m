@@ -1,4 +1,4 @@
-function [x,syms] = packet_generator_with_gt(mod_order)
+function [x,bits_int,syms,num_carriers,prefix_len,num_ofdmsymbols,ltf_len,stf_len] = packet_generator_with_gt(mod_order)
 
     % STF
     S = (1 / sqrt(2)) * [0, 0, (1 + 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (-1 - 1j), 0, 0, 0, (1 + 1j), 0, 0, 0, ...
@@ -32,11 +32,23 @@ function [x,syms] = packet_generator_with_gt(mod_order)
     num_ofdmsymbols = 12;
 
     % Data
-    bits = randi([0,1],1,(num_ofdmsymbols*num_carriers*log2(M)));
+    bits = randi([0,1],1,(num_ofdmsymbols*(num_carriers-12)*log2(M)));
     syms = (qammod(bits',M,'gray','InputType','bit','UnitAveragePower',true))';
-    
+    bits_int = qamdemod(syms,M,'gray','UnitAveragePower',true);
+
+    padded_syms = complex(zeros(1,(num_ofdmsymbols*num_carriers)),...
+                          zeros(1,(num_ofdmsymbols*num_carriers)));
+    for ofdmsymbol_index = 1:num_ofdmsymbols
+        symbol_start = (ofdmsymbol_index-1)*(num_carriers-12) + 1;
+        padded_symbol_start = (ofdmsymbol_index-1)*num_carriers + 1;
+        padded_syms((padded_symbol_start+2-1):(padded_symbol_start+27-1)) = ...
+            syms(symbol_start:(symbol_start+26-1));
+        padded_syms((padded_symbol_start+39-1):(padded_symbol_start+num_carriers-1)) = ...
+            syms(symbol_start+27-1:(symbol_start+num_carriers-12-1));
+    end
+
 %     figure;
-%     refpts = qammod((0:(M-1))',M);
+%     refpts = qammod((0:(M-1))',M,'gray','UnitAveragePower',true);
 %     plot(syms,'co');
 %     hold on;
 %     plot(refpts,'r*');
@@ -45,7 +57,7 @@ function [x,syms] = packet_generator_with_gt(mod_order)
 %     ylabel('Quadrature');
 %     legend('syms','refpts', ...
 %         'Reference constellation','location','nw');
-    
+
     x_data = complex(zeros(1,(num_ofdmsymbols*(num_carriers + num_prefix))),...
                      zeros(1,(num_ofdmsymbols*(num_carriers + num_prefix))));
 
@@ -54,10 +66,18 @@ function [x,syms] = packet_generator_with_gt(mod_order)
         symbol_start = (ofdmsymbol_index-1)*(num_carriers) + 1;
         ofdmsymbol_start = (ofdmsymbol_index-1)*(num_carriers + num_prefix) + 1;
         x_data((ofdmsymbol_start+num_prefix):(ofdmsymbol_start+num_prefix+num_carriers-1)) = ...
-            ifft(syms(symbol_start:(symbol_start+num_carriers-1)));
+            ifft(padded_syms(symbol_start:(symbol_start+num_carriers-1)));
         x_data((ofdmsymbol_start):(ofdmsymbol_start+num_prefix-1)) = ...
             x_data((ofdmsymbol_start+num_carriers):(ofdmsymbol_start+num_carriers+num_prefix-1));
     end
+
+
+
+
+    ltf_len = length(x_ltf);
+    stf_len = length(x_stf);
+    prefix_len = num_prefix;
+
 
     x = [x_stf x_ltf x_data];
 

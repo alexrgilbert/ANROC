@@ -25,12 +25,12 @@ bits = randi([0,1],1,(num_ofdmsymbols*num_carriers*max(log2(M),1)));
 
  total_tx_len = (length(bits) + (ceil((length(bits)) / (num_carriers))*num_prefix) + x_stf_len)*us_rate;
 
-x_len = packet_generator_audio(bits_per_sym,bits,x_stf_len,us_rate);
+x_len = packet_generator_audio(bits_per_sym,bits,x_stf_len);%,us_rate);
 msg_len = length(x_len);
 x_full = zeros(20*msg_len,1);
 for i = 1:20
     if (mod(i,4) == 2)
-        x_full(((i-1) * msg_len)+1:(i * msg_len)) = packet_generator_audio(bits_per_sym);
+        x_full(((i-1) * msg_len)+1:(i * msg_len)) = packet_generator_audio(bits_per_sym,bits,x_stf_len);
     end
 end
 % Prefix = zeros(PFbits,1);
@@ -55,6 +55,16 @@ end
 % signal = repelem(signalbits,Fs*Ts);
 % prefixsig = repelem(Prefix,Fs*Ts);
 signal = x_full;
+
+% us_len = us_rate*length(signal);
+% x_upsampled = complex(zeros(1,us_len),...
+%                     zeros(1,us_len));
+% for i = 1:(us_len)
+%     downsampled_idx = floor((i-1)/2.25)+1;
+%     x_upsampled(1,i) = signal(1,downsampled_idx)
+% end
+
+
 carrier_i = zeros(length(signal),1);
 for i = 0:length(signal)-1
     carrier_i(i+1,1) = sqrt(2)*cos(Fc*(2*pi) * i / Fs);
