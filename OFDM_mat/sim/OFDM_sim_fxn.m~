@@ -1,0 +1,50 @@
+clear all;
+% close all;
+
+addpath('../fxns');
+addpath('../helpers');
+
+p = ofdm_par_fxn();
+
+
+h = [1,.9,.8,.7,.6,.5,.4,.3,.2,.1];%, .5];
+% if p.upconvert == false
+%     for n = 1:length(h)
+%         h(n) = h(n) * exp(-1*j*2*pi*p.Fc*(n/p.TX_Fs));
+%     end
+% end
+h = h(1:p.num_taps);
+if p.broadband == true
+    delay_len = (p.symbol_time * p.tap_delay_factor) * p.TX_Fs;
+    h_l = zeros(1,length(h)*delay_len);
+    for i = 1:length(h)
+        h_l((delay_len*(i-1))+1) = h(i);
+    end
+end
+h = h/vecnorm(h);
+H = fft(h, 64);
+% h = upsample(h,p.us_rate);
+H_og = fft([1],64);
+freq_offset_eps = .000;
+freq_offset = freq_offset_eps * p.delta_fs;
+
+d.sim = true;
+d.h = h;
+d.H = H;
+
+SNR = 200;
+
+[bits, syms, syms_int, signal_bb, signal_bb_ds, signal, detected_syms_gt,...
+ detected_syms_gt_ds] = ofdm_tx_fxn(p);
+
+if p.channel == true
+    y = channel_fxn(signal, h, freq_offset, SNR, p.symbol_time);
+else
+    y = signal;
+end
+
+[y_bb_us,y_bb_hp,y_bb,detected_syms,r, H_hat_avg, L_hat_avg, L]= ofdm_rx_fxn(y,p,d);
+
+ofdm_proc_fxn(bits, syms, syms_int, signal_bb, signal_bb_ds, signal,...
+        detected_syms_gt, detected_syms_gt_ds, y, y_bb_us, y_bb_hp, y_bb,...
+         detected_syms, H_hat_avg, L_hat_avg, L, r, p, d);
